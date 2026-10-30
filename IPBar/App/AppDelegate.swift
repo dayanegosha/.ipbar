@@ -11,8 +11,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let login = LoginItemController()
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
-    private var statusLayoutKey: String?
-    private var reservedStatusWidth: CGFloat = 0
     private let navigation = PopoverNavigation()
     private var subscriptions: Set<AnyCancellable> = []
 
@@ -40,34 +38,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.animates = true
         popover.contentViewController = NSHostingController(rootView: PopoverView(
             navigation: navigation, monitor: monitor, settings: settings, wifi: wifi, login: login))
-        popover.contentSize = NSSize(width: 380, height: 590)
+        popover.contentSize = NSSize(width: 380, height: settings.onboardingComplete ? 520 : 590)
+        settings.$onboardingComplete.sink { [weak self] complete in
+            self?.popover.contentSize = NSSize(width: 380, height: complete ? 520 : 590)
+        }.store(in: &subscriptions)
         Publishers.CombineLatest4(monitor.$snapshot, settings.$selection, settings.$display, settings.$addressFamily)
             .sink { [weak self] snapshot, selection, display, family in
                 let interface = snapshot.selected(InterfaceSelection(rawValue: selection), family: family)
                 let title = display.title(for: interface, family: family)
-                guard let self, let item = self.statusItem, let button = item.button else { return }
-                let layoutKey = "\(family.rawValue):\(display.rawValue)"
-                if self.statusLayoutKey != layoutKey {
-                    self.statusLayoutKey = layoutKey
-                    self.reservedStatusWidth = 0
-                }
-                var reference = family == .ipv4 ? "255.255.255.255" : "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
-                if display == .interface { reference += " · \(interface?.name ?? "en00")" }
-                if display == .prefixed { reference = "\(family == .ipv4 ? "IP" : "IPv6"): " + reference }
-                let attributes: [NSAttributedString.Key: Any] = [.font: button.font ?? NSFont.menuBarFont(ofSize: 0)]
-                let width = ceil(max((title as NSString).size(withAttributes: attributes).width,
-                                     (reference as NSString).size(withAttributes: attributes).width)) + 16
-                self.reservedStatusWidth = max(self.reservedStatusWidth, width)
-                if item.length != self.reservedStatusWidth { item.length = self.reservedStatusWidth }
+                guard let button = self?.statusItem?.button else { return }
                 if button.title != title { button.title = title }
                 button.toolTip = ".ipbar — \(snapshot.status(for: interface).rawValue)"
                 button.setAccessibilityLabel(".ipbar — \(title)")
             }.store(in: &subscriptions)
         settings.onChange = { [weak self] in
             guard let self else { return }
-            self.monitor.configure(polling: self.settings.automaticRefresh, interval: self.settings.interval)
+            self.monitor.configure(polling: true, interval: self.settings.interval)
         }
-        monitor.configure(polling: settings.automaticRefresh, interval: settings.interval)
+        monitor.configure(polling: true, interval: settings.interval)
         wifi.didChange = { [weak self] in self?.monitor.refresh() }
         monitor.start()
         login.enableOnFirstLaunch(settings: settings)

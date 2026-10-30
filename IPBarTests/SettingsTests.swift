@@ -16,7 +16,6 @@ final class SettingsTests: XCTestCase {
         settings.display = .interface
         settings.selection = "interface:en19"
         settings.showIPv6 = false
-        settings.automaticRefresh = false
         settings.interval = 30
         let restored = SettingsStore(defaults: defaults)
         XCTAssertEqual(restored.addressFamily, .ipv6)
@@ -25,7 +24,6 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(restored.display, .interface)
         XCTAssertEqual(restored.selection, "interface:en19")
         XCTAssertFalse(restored.showIPv6)
-        XCTAssertFalse(restored.automaticRefresh)
         XCTAssertEqual(restored.interval, 30)
     }
 

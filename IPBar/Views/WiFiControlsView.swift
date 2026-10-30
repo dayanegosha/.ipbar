@@ -23,8 +23,8 @@ struct WiFiControlsView: View {
                 }.contentShape(Rectangle())
             }.buttonStyle(.plain).foregroundStyle(.secondary)
             if let error = wifi.errorMessage {
-                Text("\(error) You can also change Wi-Fi in System Settings.")
-                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Text("Couldn’t change Wi-Fi here. Use System Settings.")
+                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true).help(error)
             }
         }.font(.callout)
             .onAppear { wifi.refresh() }
