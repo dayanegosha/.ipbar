@@ -35,6 +35,7 @@ public struct NetworkInterface: Identifiable, Equatable, Codable, Sendable {
     public var mac: String?
     public var gateway: String?
     public var dns: [String]
+    public var dnsScope = "Interface"
     public var ssid: String?
     public var primaryAddress: IPv4Address? {
         ipv4.first(where: { !$0.isSelfAssigned }) ?? ipv4.first

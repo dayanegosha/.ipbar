@@ -44,7 +44,10 @@ public final class NetworkInfoProvider: @unchecked Sendable {
             interfaces[index].gateway = routes.first { $0.interfaceName == name && $0.isDefault }?.gateway ?? router
             if name == primaryName {
                 interfaces[index].gateway = primaryRoute?.gateway ?? interfaces[index].gateway
-                if dns.isEmpty { dns = globalDNS }
+                if dns.isEmpty {
+                    dns = globalDNS
+                    interfaces[index].dnsScope = "System default"
+                }
                 if interfaces[index].gateway == nil, name == hint { interfaces[index].gateway = global4["Router"] as? String }
             }
             interfaces[index].dns = dns.reduce(into: []) { if !$0.contains($1) { $0.append($1) } }

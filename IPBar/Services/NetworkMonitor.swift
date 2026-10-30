@@ -15,7 +15,8 @@ final class NetworkMonitor: ObservableObject {
     @Published private(set) var isRefreshing = false
     @Published private(set) var isChecking = true
     @Published private(set) var monitoringWarning: String?
-    private let provider = NetworkInfoProvider()
+    private let readSnapshot: @Sendable () -> NetworkSnapshot
+    private let observesSystem: Bool
     private let queue = DispatchQueue(label: "com.georgezhurik.ipbar.discovery", qos: .utility)
     private let eventQueue = DispatchQueue(label: "com.georgezhurik.ipbar.events", qos: .utility)
     private var store: SCDynamicStore?
@@ -30,9 +31,16 @@ final class NetworkMonitor: ObservableObject {
     private var polling = true
     private var interval = 5
 
+    init(readSnapshot: @escaping @Sendable () -> NetworkSnapshot = { NetworkInfoProvider().snapshot() }, observesSystem: Bool = true) {
+        self.readSnapshot = readSnapshot
+        self.observesSystem = observesSystem
+    }
+    
     func start() {
+
         guard !running else { return }
         running = true
+        if !observesSystem { configureTimer(); refresh(); return }
         let relay = NetworkEventRelay { [weak self] in
             Task { @MainActor [weak self] in self?.networkChanged() }
         }
@@ -101,7 +109,7 @@ final class NetworkMonitor: ObservableObject {
         isChecking = true
     }
 
-    private func networkChanged() {
+    func networkChanged() {
         guard running else { return }
         invalidate()
         debounce?.cancel()
@@ -118,9 +126,9 @@ final class NetworkMonitor: ObservableObject {
         inFlight = true
         isRefreshing = true
         let request = generation
-        let provider = provider
+        let readSnapshot = readSnapshot
         queue.async { [weak self] in
-            let result = provider.snapshot()
+            let result = readSnapshot()
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 self.inFlight = false

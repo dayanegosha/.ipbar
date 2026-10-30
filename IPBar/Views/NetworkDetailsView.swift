@@ -32,7 +32,7 @@ struct NetworkDetailsView: View {
                         CopyValueRow(label: "DNS servers", value: nil, copy: copy)
                     } else {
                         ForEach(Array(interface.dns.enumerated()), id: \.offset) { index, server in
-                            CopyValueRow(label: index == 0 ? "DNS servers" : nil, value: server, copy: copy)
+                            CopyValueRow(label: index == 0 ? (interface.dnsScope == "System default" ? "DNS servers · system default" : "DNS servers") : nil, value: server, copy: copy)
                         }
                     }
                 }
