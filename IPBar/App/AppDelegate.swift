@@ -112,7 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidBecomeActive(_ notification: Notification) { login.refresh(); wifi.refresh() }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag { togglePopover() }
+        if !popover.isShown { togglePopover() }
         return true
     }
 
