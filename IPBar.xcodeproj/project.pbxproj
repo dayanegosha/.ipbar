@@ -1,0 +1,53 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+		FB03C13101370BA21CF6B493 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IPBar/App/IPBarApp.swift"; sourceTree = SOURCE_ROOT; };
+		07F9D9DAAA1F19F5D196E38E = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IPBar/App/AppDelegate.swift"; sourceTree = SOURCE_ROOT; };
+		F2961286B55A248DC79E742E = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IPBar/Models/NetworkInfo.swift"; sourceTree = SOURCE_ROOT; };
+		97D35B24C0A04CD670D6FFE1 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IPBar/Models/NetworkInterface.swift"; sourceTree = SOURCE_ROOT; };
+		6090BDCFD72E87BFB91CF79B = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IPBarTests/SelectionTests.swift"; sourceTree = SOURCE_ROOT; };
+		1927E7E9A85FAFD9FEE76522 = { isa = PBXFileReference; explicitFileType = "archive.ar"; path = "libIPBarCore.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F985907C6919221D555FBD4 = { isa = PBXFileReference; explicitFileType = "wrapper.application"; path = "IP Bar.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		279D725AA5E7D8C31FAECD30 = { isa = PBXFileReference; explicitFileType = "wrapper.cfbundle"; path = "IPBarTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FBDC4F23F93125BBEEAE800C = { isa = PBXGroup; children = (1927E7E9A85FAFD9FEE76522,6F985907C6919221D555FBD4,279D725AA5E7D8C31FAECD30,); name = Products; sourceTree = "<group>"; };
+		59BD0A3FF43B32849B319E64 = { isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IPBar/Resources/Info.plist; sourceTree = SOURCE_ROOT; };
+		DC76E9F0C0006E8F919E0C51 = { isa = PBXGroup; children = (FB03C13101370BA21CF6B493,07F9D9DAAA1F19F5D196E38E,F2961286B55A248DC79E742E,97D35B24C0A04CD670D6FFE1,6090BDCFD72E87BFB91CF79B,59BD0A3FF43B32849B319E64,FBDC4F23F93125BBEEAE800C,); sourceTree = "<group>"; };
+		D08DD63EED508AD30D0CB0B4 = { isa = XCBuildConfiguration; name = Debug; buildSettings = { CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; ENABLE_TESTABILITY = YES; DEBUG_INFORMATION_FORMAT = dwarf; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; }; };
+		811CB99F7A296F7846C18A7F = { isa = XCBuildConfiguration; name = Release; buildSettings = { CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_COMPILATION_MODE = wholemodule; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; }; };
+		C81BE6FD63C7E0B780E1FA69 = { isa = XCConfigurationList; buildConfigurations = (D08DD63EED508AD30D0CB0B4,811CB99F7A296F7846C18A7F,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		230E89F27338A772E798C2EF = { isa = PBXBuildFile; fileRef = F2961286B55A248DC79E742E; };
+		C32B3E020A80FE8E521F0E26 = { isa = PBXBuildFile; fileRef = 97D35B24C0A04CD670D6FFE1; };
+		D5BBEC3FB23A500BFA2B2549 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (230E89F27338A772E798C2EF,C32B3E020A80FE8E521F0E26,); runOnlyForDeploymentPostprocessing = 0; };
+		F640C6D7584192BE202CFA2F = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		DB58A5C77DA4394DB2EFA93F = { isa = XCBuildConfiguration; name = Debug; buildSettings = { CODE_SIGN_STYLE = Manual; CODE_SIGN_IDENTITY = "-"; DEVELOPMENT_TEAM = ""; PRODUCT_NAME = IPBarCore; DEFINES_MODULE = YES; SKIP_INSTALL = YES; SWIFT_INSTALL_OBJC_HEADER = NO; MACH_O_TYPE = staticlib; }; };
+		CB2922A957F58BFA1E34A3E3 = { isa = XCBuildConfiguration; name = Release; buildSettings = { CODE_SIGN_STYLE = Manual; CODE_SIGN_IDENTITY = "-"; DEVELOPMENT_TEAM = ""; PRODUCT_NAME = IPBarCore; DEFINES_MODULE = YES; SKIP_INSTALL = YES; SWIFT_INSTALL_OBJC_HEADER = NO; MACH_O_TYPE = staticlib; }; };
+		6C7EB05687CADE5F628995F0 = { isa = XCConfigurationList; buildConfigurations = (DB58A5C77DA4394DB2EFA93F,CB2922A957F58BFA1E34A3E3,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		1D53C4B5DD7272C7FBE26C0A = { isa = PBXNativeTarget; buildConfigurationList = 6C7EB05687CADE5F628995F0; buildPhases = (D5BBEC3FB23A500BFA2B2549,F640C6D7584192BE202CFA2F,); buildRules = (); dependencies = (); name = IPBarCore; productName = "IPBarCore"; productReference = 1927E7E9A85FAFD9FEE76522; productType = "com.apple.product-type.library.static"; };
+		C89809FF5608CB1FA500FE46 = { isa = PBXBuildFile; fileRef = FB03C13101370BA21CF6B493; };
+		9757EABF3EBC7F5E4AC8D59C = { isa = PBXBuildFile; fileRef = 07F9D9DAAA1F19F5D196E38E; };
+		09D394F0C4AC7150454F7964 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (C89809FF5608CB1FA500FE46,9757EABF3EBC7F5E4AC8D59C,); runOnlyForDeploymentPostprocessing = 0; };
+		552BCFF90E36488A0EB96BB5 = { isa = PBXBuildFile; fileRef = 1927E7E9A85FAFD9FEE76522; };
+		4F2A9EF1965D27082B013DDF = { isa = PBXContainerItemProxy; containerPortal = 98F54143AB4E86B28C3AFEE0; proxyType = 1; remoteGlobalIDString = 1D53C4B5DD7272C7FBE26C0A; remoteInfo = IPBarCore; };
+		97E2E9F4E92718018903E77A = { isa = PBXTargetDependency; target = 1D53C4B5DD7272C7FBE26C0A; targetProxy = 4F2A9EF1965D27082B013DDF; };
+		69FA0EB7ABE4CF1513817DFC = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (552BCFF90E36488A0EB96BB5,); runOnlyForDeploymentPostprocessing = 0; };
+		3FFA5895274E647A05CD52DD = { isa = XCBuildConfiguration; name = Debug; buildSettings = { CODE_SIGN_STYLE = Manual; CODE_SIGN_IDENTITY = "-"; DEVELOPMENT_TEAM = ""; PRODUCT_NAME = "IP Bar"; PRODUCT_MODULE_NAME = IPBar; PRODUCT_BUNDLE_IDENTIFIER = com.georgezhurik.ipbar; INFOPLIST_FILE = IPBar/Resources/Info.plist; GENERATE_INFOPLIST_FILE = NO; CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 1.0.0; ENABLE_HARDENED_RUNTIME = YES; COMBINE_HIDPI_IMAGES = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; }; };
+		23C59542D54EF20607BC134D = { isa = XCBuildConfiguration; name = Release; buildSettings = { CODE_SIGN_STYLE = Manual; CODE_SIGN_IDENTITY = "-"; DEVELOPMENT_TEAM = ""; PRODUCT_NAME = "IP Bar"; PRODUCT_MODULE_NAME = IPBar; PRODUCT_BUNDLE_IDENTIFIER = com.georgezhurik.ipbar; INFOPLIST_FILE = IPBar/Resources/Info.plist; GENERATE_INFOPLIST_FILE = NO; CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 1.0.0; ENABLE_HARDENED_RUNTIME = YES; COMBINE_HIDPI_IMAGES = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; }; };
+		FF88E7B5C04F5359506B7960 = { isa = XCConfigurationList; buildConfigurations = (3FFA5895274E647A05CD52DD,23C59542D54EF20607BC134D,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		4A2CD5EB770569AC9A81AF16 = { isa = PBXNativeTarget; buildConfigurationList = FF88E7B5C04F5359506B7960; buildPhases = (09D394F0C4AC7150454F7964,69FA0EB7ABE4CF1513817DFC,); buildRules = (); dependencies = (97E2E9F4E92718018903E77A,); name = IPBar; productName = "IPBar"; productReference = 6F985907C6919221D555FBD4; productType = "com.apple.product-type.application"; };
+		81E8E7839E4966E65EFBDB13 = { isa = PBXBuildFile; fileRef = 6090BDCFD72E87BFB91CF79B; };
+		555A2DEAE13D52496BB775FE = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (81E8E7839E4966E65EFBDB13,); runOnlyForDeploymentPostprocessing = 0; };
+		F1FA2C63A732BA58FAE3557C = { isa = PBXBuildFile; fileRef = 1927E7E9A85FAFD9FEE76522; };
+		0D64E9DD4BDA928F9A97F034 = { isa = PBXContainerItemProxy; containerPortal = 98F54143AB4E86B28C3AFEE0; proxyType = 1; remoteGlobalIDString = 1D53C4B5DD7272C7FBE26C0A; remoteInfo = IPBarCore; };
+		87590FC06A9E7A6F08F99433 = { isa = PBXTargetDependency; target = 1D53C4B5DD7272C7FBE26C0A; targetProxy = 0D64E9DD4BDA928F9A97F034; };
+		AF0AE35924BE916A2E7097A3 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (F1FA2C63A732BA58FAE3557C,); runOnlyForDeploymentPostprocessing = 0; };
+		E324F1F0590549A54E38ADA9 = { isa = XCBuildConfiguration; name = Debug; buildSettings = { CODE_SIGN_STYLE = Manual; CODE_SIGN_IDENTITY = "-"; DEVELOPMENT_TEAM = ""; PRODUCT_NAME = IPBarTests; PRODUCT_BUNDLE_IDENTIFIER = com.georgezhurik.ipbar.tests; GENERATE_INFOPLIST_FILE = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks"; }; };
+		0A24D01AEB6B31C4CB36B061 = { isa = XCBuildConfiguration; name = Release; buildSettings = { CODE_SIGN_STYLE = Manual; CODE_SIGN_IDENTITY = "-"; DEVELOPMENT_TEAM = ""; PRODUCT_NAME = IPBarTests; PRODUCT_BUNDLE_IDENTIFIER = com.georgezhurik.ipbar.tests; GENERATE_INFOPLIST_FILE = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks"; }; };
+		B2942FCFFE6AF7DFD883B65B = { isa = XCConfigurationList; buildConfigurations = (E324F1F0590549A54E38ADA9,0A24D01AEB6B31C4CB36B061,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		E016E548A190038084243C22 = { isa = PBXNativeTarget; buildConfigurationList = B2942FCFFE6AF7DFD883B65B; buildPhases = (555A2DEAE13D52496BB775FE,AF0AE35924BE916A2E7097A3,); buildRules = (); dependencies = (87590FC06A9E7A6F08F99433,); name = IPBarTests; productName = "IPBarTests"; productReference = 279D725AA5E7D8C31FAECD30; productType = "com.apple.product-type.bundle.unit-test"; };
+		98F54143AB4E86B28C3AFEE0 = { isa = PBXProject; attributes = { LastUpgradeCheck = 1500; }; buildConfigurationList = C81BE6FD63C7E0B780E1FA69; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en,Base,); mainGroup = DC76E9F0C0006E8F919E0C51; productRefGroup = FBDC4F23F93125BBEEAE800C; projectDirPath = ""; projectRoot = ""; targets = (1D53C4B5DD7272C7FBE26C0A,4A2CD5EB770569AC9A81AF16,E016E548A190038084243C22,); };
+	};
+	rootObject = 98F54143AB4E86B28C3AFEE0;
+}
