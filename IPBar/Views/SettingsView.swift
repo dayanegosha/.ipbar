@@ -37,13 +37,13 @@ struct SettingsView: View {
                         Text("\(name) (unavailable)").tag(settings.selection)
                     }
                 }
-                Text("Automatic follows the default IPv4 route, including full-tunnel VPN routes. Split-tunnel VPNs can be selected manually.")
+                Text("Automatic follows the default IPv4 route or the system’s primary IPv6 interface. Split-tunnel VPNs can be selected manually.")
                     .font(.caption).foregroundStyle(.secondary)
             } header: { Text("Network") }
             Section("Updates") {
                 Toggle("Automatically refresh", isOn: $settings.automaticRefresh)
                 Picker("Fallback interval", selection: $settings.interval) {
-                    ForEach(SettingsStore.intervals, id: \.self) { Text("\($0) seconds").tag($0) }
+                    ForEach(SettingsStore.intervals, id: \.self) { Text($0 == 1 ? "1 second" : "\($0) seconds").tag($0) }
                 }.disabled(!settings.automaticRefresh)
                 Text("Network changes always update immediately. The interval is an additional check; turning it off keeps system notifications active.")
                     .font(.caption).foregroundStyle(.secondary)

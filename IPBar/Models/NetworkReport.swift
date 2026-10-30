@@ -17,7 +17,7 @@ public enum NetworkReport {
         lines.append("MAC: \(interface.mac ?? "Unavailable")")
         if includeIPv6 { for address in interface.ipv6 { lines.append("IPv6: \(address)") } }
         if interface.kind == .wifi { lines.append("SSID: \(interface.ssid ?? "Unavailable (may require Location Services)")") }
-        lines.append("Selection: \(selection == .automatic ? snapshot.routeDescription : "Manual preference")")
+        lines.append("Selection: \(selection == .automatic ? (family == .ipv6 ? "System IPv6 interface" : snapshot.routeDescription) : "Manual preference")")
         lines.append("Updated: \(ISO8601DateFormatter().string(from: snapshot.collectedAt))")
         return lines.joined(separator: "\n")
     }

@@ -94,7 +94,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         navigation.showsSettings = true
         if !popover.isShown { togglePopover() }
     }
-    
+
     private func installMenu() {
         let menu = NSMenu()
         let item = NSMenuItem()

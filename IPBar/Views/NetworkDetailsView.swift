@@ -27,7 +27,7 @@ struct NetworkDetailsView: View {
                     CopyValueRow(label: interface.ipv4.count > 1 ? "Subnet mask · \(address.address)" : "Subnet mask",
                                  value: address.mask, copy: copy)
                 }
-                CopyValueRow(label: "Default gateway", value: interface.gateway, copy: copy)
+                CopyValueRow(label: heroFamily == .ipv6 ? "IPv4 gateway" : "Default gateway", value: interface.gateway, copy: copy)
                 VStack(alignment: .leading, spacing: 5) {
                     if interface.dns.isEmpty {
                         CopyValueRow(label: "DNS servers", value: nil, copy: copy)

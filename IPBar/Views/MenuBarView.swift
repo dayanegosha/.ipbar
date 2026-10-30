@@ -35,8 +35,8 @@ struct MenuBarView: View {
                         }
                         Button { if let address { copy(address) } } label: {
                             HStack(spacing: 10) {
-                                Text(address ?? settings.addressFamily.emptyTitle).font(.system(size: 23, weight: .medium)).monospacedDigit()
-                                    .lineLimit(1).minimumScaleFactor(0.7)
+                                Text(address ?? settings.addressFamily.emptyTitle).font(.system(size: settings.addressFamily == .ipv6 ? 19 : 23, weight: .medium)).monospacedDigit()
+                                    .lineLimit(settings.addressFamily == .ipv6 ? 2 : 1).minimumScaleFactor(0.85).multilineTextAlignment(.leading)
                                 Spacer(minLength: 0)
                                 if address != nil { Image(systemName: "doc.on.doc").font(.callout).foregroundStyle(.secondary) }
                             }.contentShape(Rectangle())
@@ -65,12 +65,12 @@ struct MenuBarView: View {
                     }
                     if !monitor.isChecking {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(settings.selection == "automatic" ? monitor.snapshot.routeDescription : "Selected in Settings")
+                            Text(settings.selection == "automatic" ? (settings.addressFamily == .ipv6 ? "System IPv6 interface" : monitor.snapshot.routeDescription) : "Selected in Settings")
                             Text("Updated \(monitor.snapshot.collectedAt.formatted(date: .omitted, time: .standard))")
                         }.font(.caption2).foregroundStyle(.tertiary)
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 20).padding(.top, 22).padding(.bottom, 18)
-            }.frame(maxHeight: 440)
+            }.frame(maxHeight: .infinity)
             Divider()
             HStack(spacing: 10) {
                 Button { copy(NetworkReport.text(snapshot: monitor.snapshot,
@@ -89,7 +89,7 @@ struct MenuBarView: View {
             }.buttonStyle(.plain).font(.callout).foregroundStyle(.secondary)
                 .padding(.horizontal, 20).padding(.bottom, 16)
         }
-        .frame(width: 380)
+        .frame(width: 380).frame(maxHeight: .infinity, alignment: .top)
         .onDisappear { feedbackTask?.cancel(); copyMessage = nil }
     }
 

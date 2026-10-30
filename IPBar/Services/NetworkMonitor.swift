@@ -36,7 +36,7 @@ final class NetworkMonitor: ObservableObject {
         self.readSnapshot = readSnapshot
         self.observesSystem = observesSystem
     }
-    
+
     func start() {
 
         guard !running else { return }
@@ -107,13 +107,17 @@ final class NetworkMonitor: ObservableObject {
     private func invalidate() {
         generation += 1
         isChecking = true
-        refreshDeadline?.cancel()
-        let expected = generation
+        armRefreshDeadline()
+    }
+
+    private func armRefreshDeadline() {
+        guard refreshDeadline == nil else { return }
         refreshDeadline = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 2_000_000_000)
-            guard !Task.isCancelled, let self, self.running, self.generation == expected, self.isChecking else { return }
+            guard !Task.isCancelled, let self, self.running, self.isChecking || self.inFlight else { return }
             self.snapshot = NetworkSnapshot(warnings: ["Network information is temporarily unavailable."])
             self.isChecking = false
+            self.refreshDeadline = nil
         }
     }
 
@@ -132,6 +136,7 @@ final class NetworkMonitor: ObservableObject {
         guard running else { return }
         if inFlight { pending = true; return }
         inFlight = true
+        armRefreshDeadline()
         isRefreshing = true
         let request = generation
         let readSnapshot = readSnapshot
@@ -143,6 +148,7 @@ final class NetworkMonitor: ObservableObject {
                 guard self.running else { return }
                 if request == self.generation {
                     self.refreshDeadline?.cancel()
+                    self.refreshDeadline = nil
                     self.snapshot = result
                     self.isChecking = false
                 }

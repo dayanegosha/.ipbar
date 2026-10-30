@@ -50,7 +50,7 @@ final class RouteTests: XCTestCase {
         data.append(contentsOf: [8, 0, 0, 0, 0, 0, 0, 0])
         XCTAssertEqual(RouteDiscovery.parse(data), [IPv4Route(interfaceName: "lo0", destination: "0.0.0.0", mask: "0.0.0.0", gateway: "192.168.1.1")])
     }
-    
+
     func testAddressChangesAndDisconnectReplaceSnapshot() {
         let before = NetworkSnapshot(interfaces: [NetworkInterface(name: "en3", ipv4: [IPv4Address("10.1.0.2")])], primaryName: "en3")
         let after = NetworkSnapshot(interfaces: [NetworkInterface(name: "en3", ipv4: [IPv4Address("10.1.0.9")])], primaryName: "en3")

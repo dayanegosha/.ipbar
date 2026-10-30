@@ -23,7 +23,44 @@ private final class ControlledReader: @unchecked Sendable {
     }
 }
 
+private final class SlowRefreshReader: @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+    let release = DispatchSemaphore(value: 0)
+
+    func read() -> NetworkSnapshot {
+        lock.lock()
+        count += 1
+        let call = count
+        lock.unlock()
+        if call > 1 { _ = release.wait(timeout: .now() + 5) }
+        return NetworkSnapshot(interfaces: [NetworkInterface(name: "en5", ipv4: [IPv4Address("10.0.0.5")])], primaryName: "en5")
+    }
+}
+
 final class MonitorTests: XCTestCase {
+    @MainActor
+    func testRepeatedEventsCannotExtendStaleAddressDeadlineForever() async {
+        let reader = SlowRefreshReader()
+        let monitor = NetworkMonitor(readSnapshot: { reader.read() }, observesSystem: false)
+        monitor.configure(polling: false, interval: 30)
+        let initial = expectation(description: "Initial address")
+        let expired = expectation(description: "Timed-out address removed")
+        let subscription = monitor.$snapshot.sink { snapshot in
+            if snapshot.selected(.automatic)?.primaryAddress != nil { initial.fulfill() }
+            if !snapshot.warnings.isEmpty { expired.fulfill() }
+        }
+        defer { monitor.stop(); reader.release.signal(); subscription.cancel() }
+        monitor.start()
+        await fulfillment(of: [initial], timeout: 2)
+        for _ in 0..<10 {
+            monitor.networkChanged()
+            try? await Task.sleep(nanoseconds: 160_000_000)
+        }
+        await fulfillment(of: [expired], timeout: 1.5)
+        XCTAssertTrue(monitor.snapshot.interfaces.isEmpty)
+    }
+
     @MainActor
     func testNetworkRefreshKeepsAddressUntilNewSnapshotIsReady() async {
         let reader = ControlledReader()
@@ -47,7 +84,7 @@ final class MonitorTests: XCTestCase {
         await fulfillment(of: [changed], timeout: 2)
         XCTAssertEqual(monitor.snapshot.selected(.automatic)?.primaryAddress?.address, "10.0.0.9")
     }
-    
+
     @MainActor
     func testNetworkChangeRejectsInFlightOldAddress() async {
         let reader = ControlledReader()

@@ -22,7 +22,7 @@ final class LoginItemController: ObservableObject {
         settings.didAttemptDefaultLogin = true
         setEnabled(true)
     }
-    
+
     func setEnabled(_ value: Bool) {
         do {
             if value { try SMAppService.mainApp.register() }
