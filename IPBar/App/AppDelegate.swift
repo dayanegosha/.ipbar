@@ -7,10 +7,13 @@ import IPBarCore
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let monitor = NetworkMonitor()
     private let settings = SettingsStore()
+    private let wifi = WiFiController()
     private let login = LoginItemController()
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
-    private var settingsWindow: NSWindow?
+    private var statusLayoutKey: String?
+    private var reservedStatusWidth: CGFloat = 0
+    private let navigation = PopoverNavigation()
     private var subscriptions: Set<AnyCancellable> = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -26,34 +29,54 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.autosaveName = "IPBarStatusItem"
         if let button = item.button {
             button.title = "No IP"
-            button.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+            button.font = NSFont.menuBarFont(ofSize: 0)
             button.target = self
             button.action = #selector(togglePopover)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-            button.setAccessibilityLabel("IP Bar — No IP")
+            button.setAccessibilityLabel(".ipbar — No IP")
         }
         statusItem = item
         popover.behavior = .transient
         popover.animates = true
-        popover.contentViewController = NSHostingController(rootView: MenuBarView(
-            monitor: monitor, settings: settings,
-            openSettings: { [weak self] in self?.showSettings() },
-            quit: { NSApp.terminate(nil) }))
-        popover.contentSize = NSSize(width: 380, height: 600)
-        Publishers.CombineLatest3(monitor.$snapshot, settings.$selection, settings.$display)
-            .sink { [weak self] snapshot, selection, display in
-                let interface = snapshot.selected(InterfaceSelection(rawValue: selection))
-                let title = display.title(for: interface)
-                self?.statusItem?.button?.title = title
-                self?.statusItem?.button?.toolTip = "IP Bar — \(snapshot.status(for: interface).rawValue)"
-                self?.statusItem?.button?.setAccessibilityLabel("IP Bar — \(title)")
+        popover.contentViewController = NSHostingController(rootView: PopoverView(
+            navigation: navigation, monitor: monitor, settings: settings, wifi: wifi, login: login))
+        popover.contentSize = NSSize(width: 380, height: 590)
+        Publishers.CombineLatest4(monitor.$snapshot, settings.$selection, settings.$display, settings.$addressFamily)
+            .sink { [weak self] snapshot, selection, display, family in
+                let interface = snapshot.selected(InterfaceSelection(rawValue: selection), family: family)
+                let title = display.title(for: interface, family: family)
+                guard let self, let item = self.statusItem, let button = item.button else { return }
+                let layoutKey = "\(family.rawValue):\(display.rawValue)"
+                if self.statusLayoutKey != layoutKey {
+                    self.statusLayoutKey = layoutKey
+                    self.reservedStatusWidth = 0
+                }
+                var reference = family == .ipv4 ? "255.255.255.255" : "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+                if display == .interface { reference += " · \(interface?.name ?? "en00")" }
+                if display == .prefixed { reference = "\(family == .ipv4 ? "IP" : "IPv6"): " + reference }
+                let attributes: [NSAttributedString.Key: Any] = [.font: button.font ?? NSFont.menuBarFont(ofSize: 0)]
+                let width = ceil(max((title as NSString).size(withAttributes: attributes).width,
+                                     (reference as NSString).size(withAttributes: attributes).width)) + 16
+                self.reservedStatusWidth = max(self.reservedStatusWidth, width)
+                if item.length != self.reservedStatusWidth { item.length = self.reservedStatusWidth }
+                if button.title != title { button.title = title }
+                button.toolTip = ".ipbar — \(snapshot.status(for: interface).rawValue)"
+                button.setAccessibilityLabel(".ipbar — \(title)")
             }.store(in: &subscriptions)
         settings.onChange = { [weak self] in
             guard let self else { return }
             self.monitor.configure(polling: self.settings.automaticRefresh, interval: self.settings.interval)
         }
         monitor.configure(polling: settings.automaticRefresh, interval: settings.interval)
+        wifi.didChange = { [weak self] in self?.monitor.refresh() }
         monitor.start()
+        login.enableOnFirstLaunch(settings: settings)
+        if !settings.onboardingComplete {
+            DispatchQueue.main.async { [weak self] in
+                guard let self, !self.popover.isShown else { return }
+                self.togglePopover()
+            }
+        }
     }
 
     @objc private func togglePopover() {
@@ -63,24 +86,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
         monitor.refresh()
+        wifi.refresh()
     }
 
     @objc private func showSettings() {
-        popover.performClose(nil)
-        if settingsWindow == nil {
-            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 470, height: 570),
-                                  styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
-            window.title = "IP Bar Settings"
-            window.isReleasedWhenClosed = false
-            window.contentViewController = NSHostingController(rootView: SettingsView(settings: settings, monitor: monitor, login: login))
-            window.center()
-            settingsWindow = window
-        }
         login.refresh()
-        NSApp.activate(ignoringOtherApps: true)
-        settingsWindow?.makeKeyAndOrderFront(nil)
+        navigation.showsSettings = true
+        if !popover.isShown { togglePopover() }
     }
-
+    
     private func installMenu() {
         let menu = NSMenu()
         let item = NSMenuItem()
@@ -89,13 +103,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsItem.target = self
         appMenu.addItem(settingsItem)
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Quit IP Bar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: "Quit .ipbar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item.submenu = appMenu
         menu.addItem(item)
         NSApp.mainMenu = menu
     }
 
-    func applicationDidBecomeActive(_ notification: Notification) { login.refresh() }
+    func applicationDidBecomeActive(_ notification: Notification) { login.refresh(); wifi.refresh() }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag { togglePopover() }

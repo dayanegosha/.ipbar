@@ -4,14 +4,16 @@ import IPBarCore
 struct MenuBarView: View {
     @ObservedObject var monitor: NetworkMonitor
     @ObservedObject var settings: SettingsStore
+    @ObservedObject var wifi: WiFiController
     let openSettings: () -> Void
     let quit: () -> Void
     @State private var copyMessage: String?
     @State private var feedbackTask: Task<Void, Never>?
 
-    private var interface: NetworkInterface? { monitor.snapshot.selected(InterfaceSelection(rawValue: settings.selection)) }
+    private var interface: NetworkInterface? { monitor.snapshot.selected(InterfaceSelection(rawValue: settings.selection), family: settings.addressFamily) }
     private var status: ConnectionStatus { monitor.snapshot.status(for: interface) }
-    private var address: String? { interface?.isUp == true ? interface?.primaryAddress?.address : nil }
+    private var address: String? { settings.addressFamily.address(for: interface) }
+    private var showsInitialLoading: Bool { monitor.isChecking && monitor.snapshot.interfaces.isEmpty }
     private var statusColor: Color {
         switch status {
         case .connected: return .green
@@ -22,37 +24,35 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("IP Bar").font(.headline)
-                Spacer()
-                if let copyMessage { Text(copyMessage).font(.caption).foregroundStyle(.secondary) }
-                else { Image(systemName: "network").foregroundStyle(.secondary) }
-            }.padding(.horizontal, 20).padding(.top, 18).padding(.bottom, 14)
             ScrollView {
                 VStack(alignment: .leading, spacing: 19) {
                     VStack(alignment: .leading, spacing: 9) {
                         HStack(spacing: 6) {
-                            Circle().fill(monitor.isChecking ? .secondary : statusColor).frame(width: 6, height: 6)
-                            Text(monitor.isChecking ? "Checking network…" : status.rawValue).font(.caption.weight(.medium)).foregroundStyle(.secondary)
+                            Circle().fill(showsInitialLoading ? .secondary : statusColor).frame(width: 6, height: 6)
+                            Text(showsInitialLoading ? "Checking network…" : status.rawValue).font(.callout).foregroundStyle(.secondary)
+                            Spacer()
+                            if let copyMessage { Text(copyMessage).font(.caption).foregroundStyle(.secondary) }
                         }
                         Button { if let address { copy(address) } } label: {
                             HStack(spacing: 10) {
-                                Text(address ?? "No IP").font(.system(size: 27, weight: .medium, design: .monospaced))
+                                Text(address ?? settings.addressFamily.emptyTitle).font(.system(size: 23, weight: .medium)).monospacedDigit()
                                     .lineLimit(1).minimumScaleFactor(0.7)
                                 Spacer(minLength: 0)
                                 if address != nil { Image(systemName: "doc.on.doc").font(.callout).foregroundStyle(.secondary) }
                             }.contentShape(Rectangle())
                         }.buttonStyle(.plain).disabled(address == nil)
-                            .accessibilityLabel(address.map { "Copy IPv4: \($0)" } ?? "No IPv4 address")
-                            .help("Copy IPv4 address")
+                            .accessibilityLabel(address.map { "Copy \(settings.addressFamily.label): \($0)" } ?? "No \(settings.addressFamily.label) address")
+                            .help("Copy \(settings.addressFamily.label) address")
                         if status == .selfAssigned {
                             Text("No DHCP lease. This link-local address only works on the local segment.")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     Divider()
+                    WiFiControlsView(wifi: wifi)
+                    Divider()
                     if let interface {
-                        NetworkDetailsView(interface: interface, showIPv6: settings.showIPv6, copy: copy)
+                        NetworkDetailsView(interface: interface, heroFamily: settings.addressFamily, showIPv6: settings.showIPv6, copy: copy)
                     } else if !monitor.isChecking {
                         Text(settings.selection == "automatic" ? "No active network interface was found." : "The selected interface is not available. Choose another interface in Settings.")
                             .font(.callout).foregroundStyle(.secondary)
@@ -69,12 +69,12 @@ struct MenuBarView: View {
                             Text("Updated \(monitor.snapshot.collectedAt.formatted(date: .omitted, time: .standard))")
                         }.font(.caption2).foregroundStyle(.tertiary)
                     }
-                }.frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 20).padding(.bottom, 18)
+                }.frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 20).padding(.top, 22).padding(.bottom, 18)
             }.frame(maxHeight: 440)
             Divider()
             HStack(spacing: 10) {
                 Button { copy(NetworkReport.text(snapshot: monitor.snapshot,
-                    selection: InterfaceSelection(rawValue: settings.selection), includeIPv6: settings.showIPv6)) } label: {
+                    selection: InterfaceSelection(rawValue: settings.selection), includeIPv6: settings.showIPv6 || settings.addressFamily == .ipv6, family: settings.addressFamily)) } label: {
                     Label("Copy All", systemImage: "doc.on.doc")
                 }.disabled(monitor.isChecking)
                 Spacer()
@@ -83,9 +83,9 @@ struct MenuBarView: View {
                 }.disabled(monitor.isRefreshing).keyboardShortcut("r", modifiers: .command)
             }.controlSize(.small).padding(.horizontal, 20).padding(.vertical, 12)
             HStack {
-                Button("Settings…", action: openSettings).keyboardShortcut(",", modifiers: .command)
+                Button("Settings", action: openSettings).keyboardShortcut(",", modifiers: .command)
                 Spacer()
-                Button("Quit IP Bar", action: quit).keyboardShortcut("q", modifiers: .command)
+                Button("Quit", action: quit).keyboardShortcut("q", modifiers: .command)
             }.buttonStyle(.plain).font(.callout).foregroundStyle(.secondary)
                 .padding(.horizontal, 20).padding(.bottom, 16)
         }

@@ -1,9 +1,9 @@
 import Foundation
 
 public enum NetworkReport {
-    public static func text(snapshot: NetworkSnapshot, selection: InterfaceSelection, includeIPv6: Bool) -> String {
-        let interface = snapshot.selected(selection)
-        var lines = ["IP Bar", "Status: \(snapshot.status(for: interface).rawValue)"]
+    public static func text(snapshot: NetworkSnapshot, selection: InterfaceSelection, includeIPv6: Bool, family: AddressFamily = .ipv4) -> String {
+        let interface = snapshot.selected(selection, family: family)
+        var lines = [".ipbar", "Status: \(snapshot.status(for: interface).rawValue)"]
         guard let interface else { return (lines + ["IPv4: No IP"]).joined(separator: "\n") }
         lines += ["Interface: \(interface.name)", "Type: \(interface.kind.rawValue)", "Service: \(interface.displayName)"]
         if interface.ipv4.isEmpty { lines.append("IPv4: No IP") }

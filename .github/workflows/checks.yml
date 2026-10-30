@@ -28,13 +28,13 @@ jobs:
       - name: verify distribution
         run: |
           mkdir -p /tmp/ipbar-check
-          ditto -x -k dist/IPBar-macOS.zip /tmp/ipbar-check
-          codesign --verify --strict --deep '/tmp/ipbar-check/IP Bar.app'
-          architectures="$(lipo -archs '/tmp/ipbar-check/IP Bar.app/Contents/MacOS/IP Bar')"
+          ditto -x -k dist/ipbar-macOS.zip /tmp/ipbar-check
+          codesign --verify --strict --deep '/tmp/ipbar-check/ipbar.app'
+          architectures="$(lipo -archs '/tmp/ipbar-check/ipbar.app/Contents/MacOS/ipbar')"
           [[ " $architectures " == *' arm64 '* ]]
           [[ " $architectures " == *' x86_64 '* ]]
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: IPBar-macOS
-          path: dist/IPBar-macOS.zip
+          path: dist/ipbar-macOS.zip
           if-no-files-found: error

@@ -71,7 +71,7 @@ public final class NetworkInfoProvider: @unchecked Sendable {
         } else {
             description = "No default route"
         }
-        return NetworkSnapshot(interfaces: interfaces, primaryName: primaryName,
+        return NetworkSnapshot(interfaces: interfaces, primaryName: primaryName, primaryIPv6Name: global6["PrimaryInterface"] as? String,
                                routeDescription: description, warnings: warnings)
     }
 }

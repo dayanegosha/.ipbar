@@ -23,6 +23,7 @@ final class NetworkMonitor: ObservableObject {
     private var pathMonitor: NWPathMonitor?
     private var timer: Timer?
     private var debounce: Task<Void, Never>?
+    private var refreshDeadline: Task<Void, Never>?
     private var observers: [NSObjectProtocol] = []
     private var generation = 0
     private var inFlight = false
@@ -55,7 +56,7 @@ final class NetworkMonitor: ObservableObject {
             Unmanaged<NetworkEventRelay>.fromOpaque(context).takeUnretainedValue().handler()
         }, &context)
         if let store {
-            let patterns = ["State:/Network/Global/.*", "State:/Network/Interface/.*/.*", "State:/Network/Service/.*/.*", "Setup:/Network/.*"]
+            let patterns = ["State:/Network/Global/.*", "State:/Network/Interface/.*/(IPv4|IPv6|Link)", "State:/Network/Service/.*/(IPv4|IPv6|DNS|Interface)", "Setup:/Network/.*"]
             if !SCDynamicStoreSetNotificationKeys(store, nil, patterns as CFArray)
                 || !SCDynamicStoreSetDispatchQueue(store, eventQueue) {
                 monitoringWarning = "Some network notifications are unavailable. Keep automatic refresh enabled."
@@ -105,8 +106,15 @@ final class NetworkMonitor: ObservableObject {
 
     private func invalidate() {
         generation += 1
-        snapshot = NetworkSnapshot()
         isChecking = true
+        refreshDeadline?.cancel()
+        let expected = generation
+        refreshDeadline = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard !Task.isCancelled, let self, self.running, self.generation == expected, self.isChecking else { return }
+            self.snapshot = NetworkSnapshot(warnings: ["Network information is temporarily unavailable."])
+            self.isChecking = false
+        }
     }
 
     func networkChanged() {
@@ -134,6 +142,7 @@ final class NetworkMonitor: ObservableObject {
                 self.inFlight = false
                 guard self.running else { return }
                 if request == self.generation {
+                    self.refreshDeadline?.cancel()
                     self.snapshot = result
                     self.isChecking = false
                 }
@@ -154,6 +163,8 @@ final class NetworkMonitor: ObservableObject {
         timer = nil
         debounce?.cancel()
         debounce = nil
+        refreshDeadline?.cancel()
+        refreshDeadline = nil
         pathMonitor?.cancel()
         pathMonitor = nil
         if let store { SCDynamicStoreSetDispatchQueue(store, nil) }

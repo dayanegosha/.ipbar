@@ -25,6 +25,30 @@ private final class ControlledReader: @unchecked Sendable {
 
 final class MonitorTests: XCTestCase {
     @MainActor
+    func testNetworkRefreshKeepsAddressUntilNewSnapshotIsReady() async {
+        let reader = ControlledReader()
+        let monitor = NetworkMonitor(readSnapshot: { reader.read() }, observesSystem: false)
+        monitor.configure(polling: false, interval: 30)
+        let initial = expectation(description: "Initial address")
+        let changed = expectation(description: "Replacement address")
+        var hasAddress = false
+        let subscription = monitor.$snapshot.sink { snapshot in
+            let address = snapshot.selected(.automatic)?.primaryAddress?.address
+            if hasAddress { XCTAssertNotNil(address, "Refresh must not flash No IP between valid snapshots") }
+            if address == "192.168.1.2" { hasAddress = true; initial.fulfill() }
+            if address == "10.0.0.9" { changed.fulfill() }
+        }
+        defer { monitor.stop(); subscription.cancel() }
+        reader.release.signal()
+        monitor.start()
+        await fulfillment(of: [initial], timeout: 2)
+        monitor.networkChanged()
+        XCTAssertEqual(monitor.snapshot.selected(.automatic)?.primaryAddress?.address, "192.168.1.2")
+        await fulfillment(of: [changed], timeout: 2)
+        XCTAssertEqual(monitor.snapshot.selected(.automatic)?.primaryAddress?.address, "10.0.0.9")
+    }
+    
+    @MainActor
     func testNetworkChangeRejectsInFlightOldAddress() async {
         let reader = ControlledReader()
         let monitor = NetworkMonitor(readSnapshot: { reader.read() }, observesSystem: false)

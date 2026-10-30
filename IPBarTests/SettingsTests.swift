@@ -10,12 +10,18 @@ final class SettingsTests: XCTestCase {
         let settings = SettingsStore(defaults: defaults)
         XCTAssertEqual(settings.selection, "automatic")
         XCTAssertEqual(settings.interval, 5)
+        settings.addressFamily = .ipv6
+        settings.onboardingComplete = true
+        settings.didAttemptDefaultLogin = true
         settings.display = .interface
         settings.selection = "interface:en19"
         settings.showIPv6 = false
         settings.automaticRefresh = false
         settings.interval = 30
         let restored = SettingsStore(defaults: defaults)
+        XCTAssertEqual(restored.addressFamily, .ipv6)
+        XCTAssertTrue(restored.onboardingComplete)
+        XCTAssertTrue(restored.didAttemptDefaultLogin)
         XCTAssertEqual(restored.display, .interface)
         XCTAssertEqual(restored.selection, "interface:en19")
         XCTAssertFalse(restored.showIPv6)

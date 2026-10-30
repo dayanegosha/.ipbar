@@ -17,7 +17,7 @@ final class ReportTests: XCTestCase {
 
     func testOfflineReportNeverReusesPreviousData() {
         XCTAssertEqual(NetworkReport.text(snapshot: NetworkSnapshot(), selection: .automatic, includeIPv6: true),
-                       "IP Bar\nStatus: Offline\nIPv4: No IP")
+                       ".ipbar\nStatus: Offline\nIPv4: No IP")
     }
 
     func testEthernetDisconnectFallsBackToCurrentWiFiSnapshot() {

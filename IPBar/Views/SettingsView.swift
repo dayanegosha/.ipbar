@@ -11,10 +11,14 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section("Menu bar") {
+                Picker("Address", selection: $settings.addressFamily) {
+                    Text("IPv4").tag(AddressFamily.ipv4)
+                    Text("IPv6").tag(AddressFamily.ipv6)
+                }
                 Picker("Display", selection: $settings.display) {
-                    Text("IPv4 only").tag(MenuDisplay.address)
-                    Text("IPv4 + interface").tag(MenuDisplay.interface)
-                    Text("IP: IPv4").tag(MenuDisplay.prefixed)
+                    Text("Address only").tag(MenuDisplay.address)
+                    Text("Address + interface").tag(MenuDisplay.interface)
+                    Text("With IP prefix").tag(MenuDisplay.prefixed)
                 }
                 Toggle("Show IPv6 in details", isOn: $settings.showIPv6)
             }
@@ -44,6 +48,14 @@ struct SettingsView: View {
                 Text("Network changes always update immediately. The interval is an additional check; turning it off keeps system notifications active.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section("Replace the Wi-Fi icon") {
+                Text(SystemSettings.menuBarInstructions).font(.caption).foregroundStyle(.secondary)
+                Button("Open menu bar settings…") { SystemSettings.open(.menuBar) }
+                Button("Wi-Fi settings…") { SystemSettings.open(.wifi) }
+                Button("Network settings…") { SystemSettings.open(.network) }
+                Text("Choose networks, enter passwords, and use Personal Hotspot in the macOS Wi-Fi settings.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("General") {
                 Toggle("Launch at login", isOn: Binding(get: { login.enabled }, set: { login.setEnabled($0) }))
                 if let message = login.message {
@@ -55,7 +67,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 470, height: 570)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear { login.refresh() }
     }
 }

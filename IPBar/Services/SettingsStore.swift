@@ -6,6 +6,12 @@ import IPBarCore
 final class SettingsStore: ObservableObject {
     private let defaults: UserDefaults
     var onChange: (() -> Void)?
+    @Published var addressFamily: AddressFamily { didSet { defaults.set(addressFamily.rawValue, forKey: "addressFamily"); onChange?() } }
+    @Published var onboardingComplete: Bool { didSet { defaults.set(onboardingComplete, forKey: "onboardingComplete") } }
+    var didAttemptDefaultLogin: Bool {
+        get { defaults.bool(forKey: "didAttemptDefaultLogin") }
+        set { defaults.set(newValue, forKey: "didAttemptDefaultLogin") }
+    }
     @Published var display: MenuDisplay { didSet { defaults.set(display.rawValue, forKey: "menuDisplay"); onChange?() } }
     @Published var selection: String { didSet { defaults.set(selection, forKey: "interfaceSelection"); onChange?() } }
     @Published var showIPv6: Bool { didSet { defaults.set(showIPv6, forKey: "showIPv6"); onChange?() } }
@@ -16,6 +22,8 @@ final class SettingsStore: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        addressFamily = AddressFamily(rawValue: defaults.string(forKey: "addressFamily") ?? "") ?? .ipv4
+        onboardingComplete = defaults.bool(forKey: "onboardingComplete")
         display = MenuDisplay(rawValue: defaults.string(forKey: "menuDisplay") ?? "") ?? .address
         selection = defaults.string(forKey: "interfaceSelection") ?? "automatic"
         showIPv6 = defaults.object(forKey: "showIPv6") as? Bool ?? true

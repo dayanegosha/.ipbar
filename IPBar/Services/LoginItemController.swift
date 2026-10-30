@@ -14,9 +14,15 @@ final class LoginItemController: ObservableObject {
         let status = SMAppService.mainApp.status
         enabled = status == .enabled || status == .requiresApproval
         needsApproval = status == .requiresApproval
-        if needsApproval { message = "Allow IP Bar in System Settings → General → Login Items." }
+        if needsApproval { message = "Allow .ipbar in System Settings → General → Login Items." }
     }
 
+    func enableOnFirstLaunch(settings: SettingsStore) {
+        guard !settings.didAttemptDefaultLogin else { return }
+        settings.didAttemptDefaultLogin = true
+        setEnabled(true)
+    }
+    
     func setEnabled(_ value: Bool) {
         do {
             if value { try SMAppService.mainApp.register() }
