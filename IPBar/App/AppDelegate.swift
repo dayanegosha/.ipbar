@@ -90,6 +90,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
     func popoverDidClose(_ notification: Notification) {
         stopOutsideClickMonitor()
+        navigation.showsSettings = false
+        navigation.showsAddresses = false
     }
 
     private func closePopover() {
