@@ -4,7 +4,7 @@ import Combine
 import IPBarCore
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let monitor = NetworkMonitor()
     private let settings = SettingsStore()
     private let wifi = WiFiController()
@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
     private let navigation = PopoverNavigation()
+    private var outsideClickMonitor: Any?
     private var subscriptions: Set<AnyCancellable> = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -34,6 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.setAccessibilityLabel(".ipbar — No IP")
         }
         statusItem = item
+        popover.delegate = self
         popover.behavior = .transient
         popover.animates = true
         let hostingController = NSHostingController(rootView: PopoverView(
@@ -75,6 +77,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         wifi.refresh()
     }
 
+    func popoverWillShow(_ notification: Notification) {
+        stopOutsideClickMonitor()
+        // AppKit's transient behavior does not dismiss for every menu or panel.
+        // Global monitoring only receives clicks delivered outside this app.
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.closePopover() }
+        }
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        stopOutsideClickMonitor()
+    }
+
+    private func closePopover() {
+        if popover.isShown { popover.performClose(nil) }
+    }
+
+    private func stopOutsideClickMonitor() {
+        if let outsideClickMonitor { NSEvent.removeMonitor(outsideClickMonitor) }
+        outsideClickMonitor = nil
+    }
+
     @objc private func showSettings() {
         login.refresh()
         navigation.showsSettings = true
@@ -97,12 +123,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidBecomeActive(_ notification: Notification) { login.refresh(); wifi.refresh() }
 
+    func applicationDidResignActive(_ notification: Notification) { closePopover() }
+
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !popover.isShown { togglePopover() }
         return true
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        stopOutsideClickMonitor()
         monitor.stop()
         subscriptions.removeAll()
         if let statusItem { NSStatusBar.system.removeStatusItem(statusItem) }
