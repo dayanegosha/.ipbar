@@ -36,12 +36,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = item
         popover.behavior = .transient
         popover.animates = true
-        popover.contentViewController = NSHostingController(rootView: PopoverView(
+        let hostingController = NSHostingController(rootView: PopoverView(
             navigation: navigation, monitor: monitor, settings: settings, wifi: wifi, login: login))
-        popover.contentSize = NSSize(width: 380, height: settings.onboardingComplete ? 520 : 590)
-        settings.$onboardingComplete.sink { [weak self] complete in
-            self?.popover.contentSize = NSSize(width: 380, height: complete ? 520 : 590)
-        }.store(in: &subscriptions)
+        hostingController.sizingOptions = [.preferredContentSize]
+        popover.contentViewController = hostingController
         Publishers.CombineLatest4(monitor.$snapshot, settings.$selection, settings.$display, settings.$addressFamily)
             .sink { [weak self] snapshot, selection, display, family in
                 let interface = snapshot.selected(InterfaceSelection(rawValue: selection), family: family)

@@ -34,7 +34,6 @@ struct AddressesView: View {
                     Divider()
                 }
             }
-            Spacer(minLength: 0)
             if copied { Text("Copied").font(.caption).foregroundStyle(.secondary) }
             HStack {
                 Button { page = max(0, currentPage - 1); copied = false } label: {

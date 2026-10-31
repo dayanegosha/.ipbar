@@ -85,7 +85,6 @@ struct SettingsView: View {
                 Text("Network information stays on this Mac. Connect to networks and Personal Hotspot in the macOS Wi-Fi settings.")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Spacer(minLength: 0)
         }.padding(20)
             .onAppear { login.refresh() }
     }

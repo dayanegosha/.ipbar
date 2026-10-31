@@ -65,22 +65,24 @@ struct MenuBarView: View {
                         Text(warning).font(.caption).foregroundStyle(.secondary)
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 16)
-            }.frame(maxHeight: .infinity, alignment: .top)
-            Spacer(minLength: 0)
+            }
             Divider()
-            HStack(spacing: 10) {
+            HStack(spacing: 0) {
                 Button { copy(NetworkReport.text(snapshot: monitor.snapshot,
                     selection: InterfaceSelection(rawValue: settings.selection), includeIPv6: settings.showIPv6 || settings.addressFamily == .ipv6, family: settings.addressFamily)) } label: {
                     Label("Copy All", systemImage: "doc.on.doc")
+                        .frame(maxWidth: .infinity).contentShape(Rectangle())
                 }.disabled(showsInitialLoading)
-                Spacer()
-                Button("Settings", action: openSettings).keyboardShortcut(",", modifiers: .command)
-                Spacer()
-                Button("Quit", action: quit).keyboardShortcut("q", modifiers: .command)
+                Button(action: openSettings) {
+                    Text("Settings").frame(maxWidth: .infinity).contentShape(Rectangle())
+                }.keyboardShortcut(",", modifiers: .command)
+                Button(action: quit) {
+                    Text("Quit").frame(maxWidth: .infinity).contentShape(Rectangle())
+                }.keyboardShortcut("q", modifiers: .command)
             }.buttonStyle(.plain).font(.callout)
                 .padding(.horizontal, 20).padding(.vertical, 16)
         }
-        .frame(width: 380).frame(maxHeight: .infinity, alignment: .top)
+        .frame(width: 380)
         .onDisappear { feedbackTask?.cancel(); copyMessage = nil }
     }
 

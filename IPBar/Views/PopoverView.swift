@@ -45,6 +45,7 @@ struct PopoverView: View {
                     quit: { NSApp.terminate(nil) })
             }
         }
-        .frame(width: 380, height: settings.onboardingComplete ? 520 : 590)
+        .frame(width: 380)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }

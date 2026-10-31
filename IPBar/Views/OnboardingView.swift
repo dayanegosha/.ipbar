@@ -28,7 +28,6 @@ struct OnboardingView: View {
                 }
                 if login.needsApproval { Button("Open Login Items…") { login.openSystemSettings() } }
             }
-            Spacer(minLength: 0)
             Button { settings.onboardingComplete = true } label: {
                 Text("Continue").frame(maxWidth: .infinity)
             }.buttonStyle(.borderedProminent).controlSize(.large)
